@@ -2,7 +2,8 @@ let audio: HTMLAudioElement | null = null;
 
 function toggleAudio() {
   if (!audio) {
-    audio = new Audio('C:\Users\khali\OneDrive\Рабочий стол\tetris-28\audio.mp4a');
+    // Указываем относительный путь к файлу
+    audio = new Audio('./audio/your-audio-file.m4a');
     audio.loop = true;
     audio.play();
   } else {

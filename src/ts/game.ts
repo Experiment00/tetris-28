@@ -1,12 +1,11 @@
-// game.ts
 import { shapes } from './shapes';
 import { IShapes } from './interfaces';
 
 const FIELD_WIDTH = 10;
 const FIELD_HEIGHT = 20;
 
-let currentX = 3; // Начальная позиция по X
-let currentY = 0; // Начальная позиция по Y
+let currentX = Math.floor(Math.random() * FIELD_WIDTH); // Случайная позиция по X
+let currentY = 0; // Позиция по Y всегда 0
 export let currentShape = { shape: shapes['T'].shape, color: shapes['T'].color, x: currentX, y: currentY };
 export let speed = 1;
 
@@ -59,12 +58,18 @@ export function rotateShape(shape: number[][]): number[][] {
   return rotatedShape;
 }
 
+// Генерация новой фигуры в случайной позиции
 export function generateNewShape() {
-  const shapeKeys = Object.keys(shapes) as (keyof IShapes)[];
-  const shapeKey = shapeKeys[Math.floor(Math.random() * shapeKeys.length)];
-  currentShape = { shape: shapes[shapeKey].shape, color: shapes[shapeKey].color, x: 3, y: 0 }; // Обновляем currentShape
-  updateCurrentX(3); // Устанавливаем X через функцию
-  updateCurrentY(0); // Устанавливаем Y через функцию
+  const shapeKeys = Object.keys(shapes) as (keyof IShapes)[]; // Получаем все фигуры
+  const shapeKey = shapeKeys[Math.floor(Math.random() * shapeKeys.length)]; // Случайная фигура
+  currentShape = {
+    shape: shapes[shapeKey].shape,
+    color: shapes[shapeKey].color,
+    x: Math.floor(Math.random() * FIELD_WIDTH), // Случайная позиция по X
+    y: 0, // Фигура появляется в верхней строке
+  };
+  updateCurrentX(currentShape.x); // Устанавливаем X
+  updateCurrentY(currentShape.y); // Устанавливаем Y
 }
 
 export function renderShape() {
@@ -98,22 +103,40 @@ export function fixShape() {
   }
 }
 
-// Основной игровой цикл
 export function gameLoop() {
   setTimeout(() => {
     if (!isPaused) {
       if (!isCollision(currentShape.shape, currentShape.x, currentShape.y + 1)) {
         updateCurrentY(currentShape.y + 1); // Обновляем Y через функцию
       } else {
-        fixShape();
-        generateNewShape();
+        fixShape(); // Если столкновение, фиксируем фигуру
+        generateNewShape(); // Генерируем новую фигуру
+        // Если снова произошло столкновение после генерации новой фигуры, то игра окончена
         if (isCollision(currentShape.shape, currentShape.x, currentShape.y)) {
           alert('Game Over!');
           return;
         }
       }
-      renderShape();
+      renderShape(); // Отображаем текущую фигуру
       gameLoop(); // Рекурсивный вызов для продолжения цикла
     }
   }, speed * 100); // Задержка по скорости
+}
+
+// Добавляем экспорт этой функции
+export function renderPlayground() {
+  const playgroundElement = document.querySelector('.game-playground')!;
+  
+  // Убедитесь, что игровое поле очищается перед добавлением новых ячеек
+  playgroundElement.innerHTML = ''; 
+
+  for (let y = 0; y < FIELD_HEIGHT; y++) {
+    for (let x = 0; x < FIELD_WIDTH; x++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.dataset.row = y.toString();
+      cell.dataset.cell = x.toString();
+      playgroundElement.appendChild(cell);
+    }
+  }
 }
